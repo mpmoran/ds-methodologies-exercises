@@ -19,21 +19,23 @@ def get_sql_conn(hostname: str, username: str, password: str, db_name: str):
     return create_engine(get_db_url(host, user, password, db_name))
 
 
-def df_from_sql(conn, query: str) -> pd.DataFrame:
+def df_from_sql(query: str, url: str) -> pd.DataFrame:
     """
     return a Pandas DataFrame resulting from a sql query
     """
-    return pd.read_sql(query, conn)
+    return pd.read_sql(query, url)
 
 def get_titanic_data() -> pd.DataFrame:
     tdb = "titanic_db"
     query = ("SELECT * "
              "FROM passengers;")
-    return df_from_sql(get_sql_conn(host, user, password, tdb), query)
+    url = get_db_url(host, user, password, tdb)
+    return df_from_sql(query, url)
 
 def get_iris_data() -> pd.DataFrame:
     idb = "iris_db"
     query = ("SELECT * "
              "FROM measurements "
              "JOIN species USING(species_id);")
-    return df_from_sql(get_sql_conn(host, user, password, idb), query)
+    url = get_db_url(host, user, password, idb)
+    return df_from_sql(query, url)
