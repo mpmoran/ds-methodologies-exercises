@@ -79,5 +79,8 @@ tests/*_tests
 # Mine
 cache/
 env.py
-4.7_numpy_exercises.ipynb
-adalib/
+__pycache__/
+.ipynb_checkpoints/
+*.csv
+*.xlsx
+
