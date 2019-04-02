@@ -39,3 +39,10 @@ def get_iris_data() -> pd.DataFrame:
              "JOIN species USING(species_id);")
     url = get_db_url(host, user, password, idb)
     return df_from_sql(query, url)
+
+def get_telco_data() -> pd.DataFrame:
+    db = "telco_churn"
+    query = ("SELECT * "
+             f"FROM customers;")
+    url = get_db_url(host, user, password, db)
+    return df_from_sql(query, url)
