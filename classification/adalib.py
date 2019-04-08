@@ -38,6 +38,12 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 
+# TODO: move the dataframe class from model.ipynb and create a copy function
+# that does the copying easily so i can create a new model but have the same
+# train and test data; have the class have X_train, X_test, y_train,
+# y_test attributes that have get methods that will perform the operation
+# on the train_df to extract the data
+
 
 def df_metadata(df: pd.DataFrame) -> Tuple[int, tuple, str]:
     """
@@ -447,6 +453,7 @@ def logreg_evaluate_model(y_true, y_preds):
     print("Rates:")
     print("True positive rate:", tp / (tp + fn))
     print("False positive rate:", fp / (fp + tp))
+    print()
     print("True negative rate:", tn / (tn + fp))
     print("False negative rate:", fn / (fn + tn))
     print()
