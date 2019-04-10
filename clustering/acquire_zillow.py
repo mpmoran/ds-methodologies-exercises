@@ -87,5 +87,5 @@ def combine_years(
     return df_2016.append(df_2017)
 
 
-def get_zillow_from_csv() -> Tuple[pd.DataFrame, pd.DataFrame]:
-    return pd.read_csv("zillow_data.csv")
+def get_zillow_from_csv(path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    return pd.read_csv(path)
