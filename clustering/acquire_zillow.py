@@ -1,4 +1,3 @@
-from typing import Tuple
 from env import host, user, password
 import pandas as pd
 from sqlalchemy import create_engine
@@ -87,5 +86,5 @@ def combine_years(
     return df_2016.append(df_2017)
 
 
-def get_zillow_from_csv(path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def get_zillow_from_csv(path: str) -> pd.DataFrame:
     return pd.read_csv(path)
