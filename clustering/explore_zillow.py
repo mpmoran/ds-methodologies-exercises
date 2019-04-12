@@ -2,6 +2,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+import scipy.stats as stats
+
 
 def df_plot_numeric(df: pd.DataFrame, cols: list, hue=None) -> None:
     """
@@ -32,3 +34,22 @@ def relplot_num_and_cat(
     """
     sns.relplot(x=x, y=y, hue=hue, data=df, alpha=0.8)
     plt.show
+
+
+def series_ttest(s1: pd.Series, s2: pd.Series) -> None:
+    t_stat, p_val = stats.ttest_ind(s1, s2)
+    print(f"T-stat: {t_stat}\np-val: {p_val}")
+
+
+def series_chi2_test(s1: pd.Series, s2: pd.Series) -> None:
+    ct = pd.crosstab(s1, s2)
+    stat, p, dof, expected = stats.chi2_contingency(ct)
+    print(f"Chi2: {stat}\np-val: {p}")
+
+
+def series_bin_with_labels(
+    series: pd.Series, bins: pd.IntervalIndex, labels: tuple
+) -> pd.Series:
+    binned = pd.cut(series, bins=bins)
+    intervals_to_labels = {b: lab for b, lab in zip(bins, labels)}
+    return binned.apply(lambda x: intervals_to_labels[x])
