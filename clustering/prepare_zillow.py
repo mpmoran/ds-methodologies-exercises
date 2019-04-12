@@ -22,10 +22,10 @@ pd.options.display.float_format = "{:20,.2f}".format
 
 
 def single_unit(df: pd.DataFrame) -> pd.DataFrame:
-    # unit cnt is 1 and has at least one bathroom and bedroom and
+    # unit cnt is 1 or nan and has at least one bathroom and bedroom and
     # square footage above 500
 
-    df = df[(df.unitcnt == 1)]
+    df = df[(df.unitcnt == 1) | (df.unitcnt.isnull())]
     df = df[
         (df.bathroomcnt > 0)
         & (df.bedroomcnt > 0)
@@ -95,6 +95,7 @@ def prepare_zillow(df: pd.DataFrame) -> pd.DataFrame:
         .pipe(zillow_drop_cols)
         .pipe(zillow_fill_cols_0)
         .pipe(zillow_impute_cols)
+        .pipe(zillow_drop_rows)
     )
 
 
@@ -167,8 +168,20 @@ def zillow_impute_yearbuilt(df: pd.DataFrame) -> pd.DataFrame:
     return df_impute_col(df, "yearbuilt", strategy="most_frequent")
 
 
-# def zillow_impute_structuretaxvaluedollarcnt(df: pd.DataFrame) -> pd.DataFrame:
-#     return df_impute_col(df, "structuretaxvaluedollarcnt", strategy="median")
+def zillow_impute_unitcnt(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    impute 1 for unitcnt
+    """
+    return df_impute_col(df, "unitcnt", strategy="constant", fill_value=1)
+
+
+def zillow_impute_taxdelinquencyflag(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    impute N for taxdelinquencyflag
+    """
+    return df_impute_col(
+        df, "taxdelinquencyflag", strategy="constant", fill_value="N"
+    )
 
 
 def zillow_impute_cols(df: pd.DataFrame) -> pd.DataFrame:
@@ -179,15 +192,19 @@ def zillow_impute_cols(df: pd.DataFrame) -> pd.DataFrame:
         .pipe(zillow_impute_regionidcity)
         .pipe(zillow_impute_regionidzip)
         .pipe(zillow_impute_yearbuilt)
-        # .pipe(zillow_impute_structuretaxvaluedollarcnt)
         .pipe(zillow_impute_land_sqft)
+        .pipe(zillow_impute_taxdelinquencyflag)
+        .pipe(zillow_impute_unitcnt)
     )
 
 
 def zillow_drop_cols(df: pd.DataFrame) -> pd.DataFrame:
     cols_to_drop = [
+        "airconditioningdesc",
         "finishedsquarefeet12",
+        "structuretaxvaluedollarcnt",
         "basementsqft",
+        "calculatedbathnbr",
         "decktypeid",
         "finishedfloor1squarefeet",
         "finishedsquarefeet13",
@@ -195,12 +212,15 @@ def zillow_drop_cols(df: pd.DataFrame) -> pd.DataFrame:
         "finishedsquarefeet50",
         "finishedsquarefeet6",
         "fireplacecnt",
+        "fullbathcnt",
         "garagecarcnt",
         "garagetotalsqft",
         "hashottuborspa",
+        "heatingorsystemdesc",
         "poolsizesum",
         "pooltypeid10",
         "pooltypeid2",
+        "taxdelinquencyyear",
         "threequarterbathnbr",
         "yardbuildingsqft17",
         "yardbuildingsqft26",
@@ -211,7 +231,6 @@ def zillow_drop_cols(df: pd.DataFrame) -> pd.DataFrame:
         "storydesc",
         "typeconstructiondesc",
         "regionidneighborhood",
-        "structuretaxvaluedollarcnt",
     ]
 
     return df.drop(columns=cols_to_drop)
@@ -237,3 +256,13 @@ def zillow_impute_land_sqft(df: pd.DataFrame) -> pd.DataFrame:
     imputed.loc[imputed.lotsizesquarefeet.isna(), "lotsizesquarefeet"] = pred
 
     return imputed
+
+
+def zillow_drop_rows(df: pd.DataFrame) -> pd.DataFrame:
+    cols = [
+        "taxvaluedollarcnt",
+        "landtaxvaluedollarcnt",
+        "taxamount",
+        "censustractandblock",
+    ]
+    return df.dropna(subset=cols)
