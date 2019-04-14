@@ -96,6 +96,7 @@ def prepare_zillow(df: pd.DataFrame) -> pd.DataFrame:
         .pipe(zillow_fill_cols_0)
         .pipe(zillow_impute_cols)
         .pipe(zillow_drop_rows)
+        .pipe(zillow_remove_outliers)
     )
 
 
@@ -266,3 +267,30 @@ def zillow_drop_rows(df: pd.DataFrame) -> pd.DataFrame:
         "censustractandblock",
     ]
     return df.dropna(subset=cols)
+
+
+def zillow_remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
+    keys = [
+        "bathroomcnt",
+        "bedroomcnt",
+        "calculatedfinishedsquarefeet",
+        "taxvaluedollarcnt",
+        "landtaxvaluedollarcnt",
+        "lotsizesquarefeet",
+    ]
+    values = [
+        (1, 7),
+        (1, 7),
+        (500, 8000),
+        (25_000, 3_000_000),
+        (10_000, 2_500_000),
+        (500, 500_000),
+    ]
+
+    dictionary = dict(zip(keys, values))
+
+    for key, value in dictionary.items():
+        df = df[df[key] >= value[0]]
+        df = df[df[key] <= value[1]]
+
+    return df
