@@ -1,27 +1,32 @@
-#!/usr/bin/env python
-# coding: utf-8
+# ---
+# jupyter:
+#   jupytext:
+#     formats: ipynb,py:light
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.4'
+#       jupytext_version: 1.1.1
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
+# ---
 
 # # NLP - Preparation Exercise
 
-# In[ ]:
-
-
+# +
 import re
 import unicodedata
 from functools import reduce, partial
 from copy import deepcopy
-from pprint import pprint
 
 import nltk
 from nltk.tokenize.toktok import ToktokTokenizer
 from nltk.corpus import stopwords
 
-import pandas as pd
 
-
-# In[ ]:
-
-
+# +
 # right to left
 def compose(*fns):
     return partial(reduce, lambda x, f: f(x), reversed(fns))
@@ -37,11 +42,13 @@ def map_exhaust(func, *iters):
         func(*args)
 
 
-# In[ ]:
-
-
+# +
 def normalize_text(text):
-    return unicodedata.normalize('NFKD', text)                      .encode('ascii', 'ignore')                      .decode('utf-8', 'ignore')
+    return (
+        unicodedata.normalize("NFKD", text)
+        .encode("ascii", "ignore")
+        .decode("utf-8", "ignore")
+    )
 
 
 def remove_chars(text):
@@ -52,23 +59,17 @@ def basic_clean(text):
     return pipe(text, str.lower, normalize_text, remove_chars)
 
 
-# In[ ]:
+# -
 
 
 def tokenize(text):
-    tokenizer = nltk.tokenize.ToktokTokenizer()
+    tokenizer = ToktokTokenizer()
     return tokenizer.tokenize(text, return_str=True)
-
-
-# In[ ]:
 
 
 def stem(text):
     ps = nltk.porter.PorterStemmer()
     return " ".join([ps.stem(word) for word in text.split()])
-
-
-# In[ ]:
 
 
 def lemmatize(text):
@@ -77,39 +78,30 @@ def lemmatize(text):
     return " ".join(lemmas)
 
 
-# In[ ]:
-
-
 def remove_stopwords(text, include=[], exclude=[]):
-    stopword_list = stopwords.words('english')
-    
+    stopword_list = stopwords.words("english")
+
     map_exhaust(stopword_list.remove, exclude)
     map_exhaust(stopword_list.append, include)
     
+    removed = " ".join([w for w in text.split() if w not in stopword_list])
+
     
-    return " ".join([w for w in text.split() if w not in stopword_list])
-
-
-# In[ ]:
+#     print("Removed", len(text.split()) - len(removed.split()), "words")
+    return removed
 
 
 def prep_article(article):
     copy = deepcopy(article)
-    
-    clean_toked = pipe(copy["original"], basic_clean, tokenize)
-    
-    copy["stemmed"] = stem(clean_toked)
-    copy["clean_stemmed"] = remove_stopwords(copy["stemmed"])
-    
-    copy["lemmatized"] = lemmatize(clean_toked)
-    copy["clean_lemmatized"] = remove_stopwords(copy["lemmatized"])
-    
+
+    copy["clean"] = pipe(copy["original"], basic_clean, tokenize, remove_stopwords)
+
+    copy["stemmed"] = stem(copy["clean"])
+
+    copy["lemmatized"] = lemmatize(copy["clean"])
+
     return copy
-
-
-# In[ ]:
 
 
 def prepare_article_data(articles):
     return (prep_article(a) for a in articles)
-
