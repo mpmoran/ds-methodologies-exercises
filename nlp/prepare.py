@@ -52,11 +52,16 @@ def normalize_text(text):
 
 
 def remove_chars(text):
-    return re.sub(r"[^A-Za-z0-9\s']", "", text)
+    return re.sub(r"[^A-Za-z0-9\s]", "", text)
+
+
+def remove_code(text):
+    # edge case where more than the article body is included
+    return text[: text.find("Join Us_ \n")]
 
 
 def basic_clean(text):
-    return pipe(text, str.lower, normalize_text, remove_chars)
+    return pipe(text, remove_code, str.lower, normalize_text, remove_chars)
 
 
 # -
@@ -83,18 +88,19 @@ def remove_stopwords(text, include=[], exclude=[]):
 
     map_exhaust(stopword_list.remove, exclude)
     map_exhaust(stopword_list.append, include)
-    
+
     removed = " ".join([w for w in text.split() if w not in stopword_list])
 
-    
-#     print("Removed", len(text.split()) - len(removed.split()), "words")
+    #     print("Removed", len(text.split()) - len(removed.split()), "words")
     return removed
 
 
 def prep_article(article):
     copy = deepcopy(article)
 
-    copy["clean"] = pipe(copy["original"], basic_clean, tokenize, remove_stopwords)
+    copy["clean"] = pipe(
+        copy["original"], basic_clean, tokenize, remove_stopwords
+    )
 
     copy["stemmed"] = stem(copy["clean"])
 
